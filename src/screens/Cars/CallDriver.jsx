@@ -14,6 +14,7 @@ import LoadMoreButton from "@/components/ui/LoadMoreButton";
 import { toast } from "react-toastify";
 import { GHANA_REGIONS, TOWNS_BY_REGION, withCustomOption } from "@/data/ghanaLocations";
 import useGeolocation from "@/hooks/useGeolocation";
+import { useRequireLogin } from "../../components/auth/LoginPrompt";
 
 const bookingInputClass =
   "w-full rounded-xl border border-ink-200 bg-ink-50 p-3 text-sm focus:border-brand-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-100";
@@ -129,6 +130,8 @@ const CallDriver = () => {
 
   const user = useSelector((state) => state.user.id);
 
+  const requireLogin = useRequireLogin();
+
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent
   );
@@ -150,8 +153,11 @@ const CallDriver = () => {
 // console.log(driver)
   const fetchUserData = async () => {
     try {
-      const response = await fetch(`${baseURL}userbyid/${user}`);
-      const data = await response.json();
+      // Signed-out visitors can browse too: only look the user up when
+      // there is one, so the comments below still load for everyone.
+      const data = user
+        ? await (await fetch(`${baseURL}userbyid/${user}`)).json()
+        : {};
       setUserData({
         name: data.name,
         email: data.email,
@@ -177,6 +183,7 @@ const CallDriver = () => {
 // console.log("User data",userData)
 
   const handleButtonClick = async () => {
+    if (!requireLogin("call")) return;
     // If the phone number is already visible, revert to "View Contact" without sending data
     if (isPhoneVisible) {
       setIsPhoneVisible(false); // Revert to "View Contact"
@@ -262,6 +269,7 @@ const CallDriver = () => {
   };
 
   const handlePostComment = async () => {
+    if (!requireLogin("comment")) return;
     if (!comment.trim()) {
       alert('Please write a comment before posting.');
       return;
@@ -400,6 +408,8 @@ const CallDriver = () => {
 
 
   const handleSubmit = async (e) => {
+    e?.preventDefault?.();
+    if (!requireLogin("book")) return;
     e.preventDefault();
 
     const badStep = bookingStepHasErrors(0) ? 0 : bookingStepHasErrors(1) ? 1 : null;
@@ -503,6 +513,8 @@ const CallDriver = () => {
 
           <button
             onClick={() => {
+              // Ask visitors to sign in before they fill in the booking form.
+              if (!requireLogin("book")) return;
               setBookingStep(0);
               setAttemptedBookingSteps(new Set());
               setShowModal(true);

@@ -12,12 +12,13 @@ export default function useSaveToggle(categoryPath, itemId) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!categoryPath || !itemId) return;
+    // Signed-out visitors have nothing saved, so skip the request: with
+    // public browsing a page of 20 cards would otherwise fire 20 extra
+    // requests on every visit, which hurts on slow mobile connections.
+    if (!categoryPath || !itemId || !userId) return;
     let cancelled = false;
 
-    const url = userId
-      ? `${baseURL}${categoryPath}/${itemId}/like?userId=${userId}`
-      : `${baseURL}${categoryPath}/${itemId}/like`;
+    const url = `${baseURL}${categoryPath}/${itemId}/like?userId=${userId}`;
 
     fetch(url)
       .then((res) => res.json())

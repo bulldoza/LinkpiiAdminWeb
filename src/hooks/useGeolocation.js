@@ -63,12 +63,17 @@ function requestPosition(options) {
  *    denies/ignores the permission prompt - treat the location as
  *    optional everywhere it's used.
  */
-export default function useGeolocation() {
+export default function useGeolocation({ eager = true } = {}) {
   const [location, setLocation] = useState({ latitude: null, longitude: null });
   const locationRef = useRef({ latitude: null, longitude: null });
   const inFlightRef = useRef(null);
 
+  // eager (default, unchanged behaviour): start the GPS fix on mount.
+  // eager: false - only ask when getLocation() is called, so a visitor
+  // just browsing the homepage isn't hit with a location permission
+  // prompt before they've done anything.
   useEffect(() => {
+    if (!eager) return undefined;
     let cancelled = false;
 
     const fetchInBackground = () => {
@@ -86,7 +91,7 @@ export default function useGeolocation() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [eager]);
 
   const getLocation = useCallback(async () => {
     if (locationRef.current.latitude != null) {

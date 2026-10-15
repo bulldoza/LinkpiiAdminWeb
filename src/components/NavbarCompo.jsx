@@ -2,16 +2,20 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import Logo from "../assets/screen.png";
+// 112px WebP (~5 KB) instead of the 555 KB screen.png - this logo is on
+// every page, so it matters on mobile data.
+import Logo from "../assets/logo-112.webp";
 import { loggedOut } from "../Redux/actions";
 import baseURL from "../assets/baseURL";
 import { LuPhoneCall } from "react-icons/lu";
-import { FiPlusCircle, FiGrid, FiTruck, FiHeart } from "react-icons/fi";
-import { FaStar, FaHireAHelper } from "react-icons/fa";
+import { FiPlusCircle, FiGrid, FiTruck, FiHeart, FiHome } from "react-icons/fi";
+import { FaHireAHelper } from "react-icons/fa";
 import { MdPhoneIphone } from "react-icons/md";
 import "react-phone-input-2/lib/style.css";
 import PhoneInput from "react-phone-input-2";
 import NotificationBell from "./NotificationBell";
+import { consumeReturnTo, setReturnTo } from "../utils/returnTo";
+import { useRequireLogin } from "./auth/LoginPrompt";
 
 const postLinks = [
   { to: "/sigform", label: "Sell a single product" },
@@ -30,7 +34,7 @@ const rentLinks = [
 // (see ButtonNavigation.jsx) and desktop users expect this in the header,
 // not pinned to the bottom of the viewport.
 const primaryNav = [
-  { key: "advert", path: "/", label: "Adverts", Icon: FaStar, match: (p) => p === "/" },
+  { key: "advert", path: "/", label: "Home", Icon: FiHome, match: (p) => p === "/" },
   { key: "buy", path: "/buy?tab=0", label: "Buy", Icon: MdPhoneIphone, match: (p) => p === "/buy" },
   { key: "tabs", path: "/tabs?tab=0", label: "KIA", Icon: FiTruck, match: (p) => p === "/tabs" },
   { key: "rent", path: "/rent?tab=0", label: "Rent", Icon: FaHireAHelper, match: (p) => p === "/rent" },
@@ -47,10 +51,11 @@ const NavbarCompo = () => {
   const navigate = useNavigate();
   const [newPhoneNumber, setNewPhoneNumber] = useState("");
   const [isPhoneModalVisible, setIsPhoneModalVisible] = useState(false);
+  const requireLogin = useRequireLogin();
 
   useEffect(() => {
     if (login && ["/loginform", "/signupform"].includes(location.pathname)) {
-      navigate("/");
+      navigate(consumeReturnTo() || "/", { replace: true });
     }
   }, [login, location, navigate]);
 
@@ -137,11 +142,12 @@ const NavbarCompo = () => {
               alt="Linkpii logo"
             />
             <span className="font-display text-lg font-extrabold tracking-tight text-ink-900 md:text-xl">
-              Link<span className="text-brand-600">pii</span>
+              Link<span className="text-brand-700">pii</span>
             </span>
           </Link>
 
-          {login && (
+          {/* Browsing is public, so the main sections show for everyone. */}
+          {(
             <div className="hidden items-center gap-1 lg:flex">
               {primaryNav.map(({ key, path, label, Icon, match }) => {
                 const active = match(location.pathname);
@@ -164,7 +170,7 @@ const NavbarCompo = () => {
           )}
 
           <div className="flex items-center gap-2">
-            <NotificationBell />
+            {login && <NotificationBell />}
             {login ? (
               <div className="flex items-center gap-2">
                 {[
@@ -208,13 +214,23 @@ const NavbarCompo = () => {
                 </button>
               </div>
             ) : (
-              <Link
-                to="/loginform"
-                className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-soft transition-colors hover:bg-brand-700 sm:px-5"
-                onClick={() => setIsOpen(false)}
-              >
-                Log in
-              </Link>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Link
+                  to="/loginform"
+                  onClick={() => setReturnTo(`${location.pathname}${location.search}`)}
+                  className="flex h-10 items-center rounded-xl px-3 text-sm font-bold text-ink-800 transition-colors hover:bg-ink-50 sm:px-4"
+                >
+                  Sign in
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => requireLogin("sell")}
+                  className="flex h-10 items-center gap-1.5 rounded-xl bg-ink-950 px-3.5 text-sm font-bold text-white transition-colors hover:bg-ink-800 sm:px-4"
+                >
+                  <FiPlusCircle className="text-base text-brand-300" aria-hidden="true" />
+                  Sell
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -228,8 +244,12 @@ const NavbarCompo = () => {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - signed-in only; hidden from keyboard/screen readers
+          while it is slid off-screen. */}
+      {login && (
       <div
+        aria-hidden={!isOpen}
+        inert={isOpen ? undefined : ""}
         className={`fixed top-0 left-0 z-50 h-full w-80 max-w-[85vw] transform overflow-y-auto rounded-r-3xl bg-white text-ink-800 shadow-2xl transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
@@ -327,6 +347,7 @@ const NavbarCompo = () => {
           </div>
         </nav>
       </div>
+      )}
 
       {networkError && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/50 px-4">

@@ -1,145 +1,171 @@
-import React from "react";
-import { Routes, Route, useNavigate, Navigate, useLocation } from "react-router-dom";
-import About from './screens/About';
+import { Suspense, lazy } from "react";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import NavbarCompo from './components/NavbarCompo';
-import Dashboard from './screens/Dashboard';
-import Listproducts from './components/Listproducts';
-import SingleProductform from './screens/Product/SingleProductform';
-import Shopform from './screens/Shop/Shopform';
-import ServiceesForm from './screens/Services/ServicesForm';
-import AgricPost from './screens/Agric/AgricPost';
-import BuildingPost from './screens/Housing/BuidingPost';
-import Equipments from './screens/Equipments/Equipments';
-import Signup from './screens/Users/Signup';
-import Login from './screens/Users/Login';
-import ErrorPage from './screens/ErrorPage';
-import ProductManagement from './screens/Product/ProductManagement';
-import ShopManagement from './screens/Shop/ShopManagement';
-import ServicesMana from './screens/Services/ServicesMana';
-import AgricMana from './screens/Agric/AgricManagement';
-import HousingMana from './screens/Housing/HousingMana';
-import BuildingDetail from './screens/Housing/BuildingDetail';
-import AdminProductDetail from './screens/Product/AdminProductDetail';
-import AdminShopDetail from './screens/Shop/AdminShopDetail';
-import AdminAgricDetail from './screens/Agric/AdminAgricDetail';
-import AdminServicesDetail from './screens/Services/AdminServicesDetail';
-import Adds from './components/Adds';
-import Advert from "./screens/Advert/Advert";
-import TabView from "./screens/Cars/TabView";
 import ButtonNavigation from "./components/ButtonNavigation";
-import BuyTabView from "./screens/Product/BuyTabView";
-import RentTabView from "./screens/Housing/RentTabView";
-import CallDriver from "./screens/Cars/CallDriver";
-import Verification from "./screens/Cars/Verification";
-import HireDetail from "./screens/Cars/HireDetail";
-import CallMechanics from "./screens/Cars/CallMechanics";
-import SparepartDetail from "./screens/Spareparts/SparepartDetail";
-import Detail from "./screens/Product/Detail";
-import ShopDetail from "./screens/Shop/ShopDetail";
-import ServicesDetail from "./screens/Services/ServicesDetail";
-import AgricDetail from "./screens/Agric/AgricDetail";
-import MainDetail from "./screens/Housing/MainDetail";
-import EquipmentDetail from "./screens/Equipments/EquipmentDetail";
-import CallDelivery from "./screens/Delivery/CallDelivery";
-import Admin from "./screens/Users/Admin";
-import ForgotPassword from "./screens/Users/ForgotPassword";
-import ResetPassword from "./screens/Users/ResetPassword";
 import { useSelector } from "react-redux";
-import MyProfile from "./screens/Users/MyProfile";
-import Report from "./screens/Users/Report";
-import CallCenter from "./screens/Users/CallCenter";
-import PrivacyPolicy from "./components/Policy";
-import TermsOfUse from "./components/Terms";
 import Home from "./screens/Home/Home";
-import HotDetail from "./screens/Home/HotDetail";
-import SavedItems from "./screens/Saved/SavedItems";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { LoginPromptProvider } from "./components/auth/LoginPrompt";
+import { setReturnTo } from "./utils/returnTo";
 
+// Every screen except the homepage is loaded on demand, so a first visit
+// only downloads the code for the page being opened (a big difference on
+// mobile data). Each route's code arrives the first time it is visited.
+const About = lazy(() => import("./screens/About"));
+const Listproducts = lazy(() => import("./components/Listproducts"));
+const SingleProductform = lazy(() => import("./screens/Product/SingleProductform"));
+const Shopform = lazy(() => import("./screens/Shop/Shopform"));
+const ServiceesForm = lazy(() => import("./screens/Services/ServicesForm"));
+const AgricPost = lazy(() => import("./screens/Agric/AgricPost"));
+const BuildingPost = lazy(() => import("./screens/Housing/BuidingPost"));
+const Equipments = lazy(() => import("./screens/Equipments/Equipments"));
+const Signup = lazy(() => import("./screens/Users/Signup"));
+const Login = lazy(() => import("./screens/Users/Login"));
+const ErrorPage = lazy(() => import("./screens/ErrorPage"));
+const ProductManagement = lazy(() => import("./screens/Product/ProductManagement"));
+const ShopManagement = lazy(() => import("./screens/Shop/ShopManagement"));
+const ServicesMana = lazy(() => import("./screens/Services/ServicesMana"));
+const AgricMana = lazy(() => import("./screens/Agric/AgricManagement"));
+const HousingMana = lazy(() => import("./screens/Housing/HousingMana"));
+const BuildingDetail = lazy(() => import("./screens/Housing/BuildingDetail"));
+const AdminProductDetail = lazy(() => import("./screens/Product/AdminProductDetail"));
+const AdminShopDetail = lazy(() => import("./screens/Shop/AdminShopDetail"));
+const AdminAgricDetail = lazy(() => import("./screens/Agric/AdminAgricDetail"));
+const AdminServicesDetail = lazy(() => import("./screens/Services/AdminServicesDetail"));
+const Adds = lazy(() => import("./components/Adds"));
+const Advert = lazy(() => import("./screens/Advert/Advert"));
+const TabView = lazy(() => import("./screens/Cars/TabView"));
+const BuyTabView = lazy(() => import("./screens/Product/BuyTabView"));
+const RentTabView = lazy(() => import("./screens/Housing/RentTabView"));
+const CallDriver = lazy(() => import("./screens/Cars/CallDriver"));
+const Verification = lazy(() => import("./screens/Cars/Verification"));
+const HireDetail = lazy(() => import("./screens/Cars/HireDetail"));
+const CallMechanics = lazy(() => import("./screens/Cars/CallMechanics"));
+const SparepartDetail = lazy(() => import("./screens/Spareparts/SparepartDetail"));
+const Detail = lazy(() => import("./screens/Product/Detail"));
+const ShopDetail = lazy(() => import("./screens/Shop/ShopDetail"));
+const ServicesDetail = lazy(() => import("./screens/Services/ServicesDetail"));
+const AgricDetail = lazy(() => import("./screens/Agric/AgricDetail"));
+const MainDetail = lazy(() => import("./screens/Housing/MainDetail"));
+const EquipmentDetail = lazy(() => import("./screens/Equipments/EquipmentDetail"));
+const CallDelivery = lazy(() => import("./screens/Delivery/CallDelivery"));
+const Admin = lazy(() => import("./screens/Users/Admin"));
+const ForgotPassword = lazy(() => import("./screens/Users/ForgotPassword"));
+const ResetPassword = lazy(() => import("./screens/Users/ResetPassword"));
+const MyProfile = lazy(() => import("./screens/Users/MyProfile"));
+const Report = lazy(() => import("./screens/Users/Report"));
+const CallCenter = lazy(() => import("./screens/Users/CallCenter"));
+const PrivacyPolicy = lazy(() => import("./components/Policy"));
+const TermsOfUse = lazy(() => import("./components/Terms"));
+const HotDetail = lazy(() => import("./screens/Home/HotDetail"));
+const SavedItems = lazy(() => import("./screens/Saved/SavedItems"));
+
+
+// Routes anyone can open: browsing is public. Actions that need an
+// account (call, WhatsApp, save, comment, report, book, sell) ask the
+// visitor to sign in at that moment - see components/auth/LoginPrompt.
+const publicRoutes = [
+  ["/", <Home key="home" />],
+  ["/about", <About key="about" />],
+  ["/advert", <Advert key="advert" />],
+  ["/detail/:type/:id", <HotDetail key="hotdetail" />],
+  ["/buy", <BuyTabView key="buy" />],
+  ["/rent", <RentTabView key="rent" />],
+  ["/tabs", <TabView key="tabs" />],
+  ["/detail/:id", <Detail key="detail" />],
+  ["/shopdetail/:id", <ShopDetail key="shopdetail" />],
+  ["/servicesdetail/:id", <ServicesDetail key="servicesdetail" />],
+  ["/agricdetail/:id", <AgricDetail key="agricdetail" />],
+  ["/buildingdetail/:id", <MainDetail key="buildingdetail" />],
+  ["/equipmentdetail/:id", <EquipmentDetail key="equipmentdetail" />],
+  ["/sparepart/:id", <SparepartDetail key="sparepart" />],
+  ["/hiredetail/:id", <HireDetail key="hiredetail" />],
+  ["/calldriver/:id", <CallDriver key="calldriver" />],
+  ["/callmechanics/:id", <CallMechanics key="callmechanics" />],
+  ["/calldelivery/:id", <CallDelivery key="calldelivery" />],
+  ["/forgotpassword", <ForgotPassword key="forgot" />],
+  ["/reset-password/:token", <ResetPassword key="reset" />],
+  ["/privacy-policy", <PrivacyPolicy key="privacy" />],
+  ["/terms", <TermsOfUse key="terms" />],
+];
+
+// Seller tools and account pages - signed-in only. A signed-out visitor
+// who opens one of these links is sent to log in and then brought back.
+const accountRoutes = [
+  ["/user", <Admin key="user" />],
+  ["/listproduct", <Listproducts key="listproduct" />],
+  ["/sigform", <SingleProductform key="sigform" />],
+  ["/shopform", <Shopform key="shopform" />],
+  ["/servicesform", <ServiceesForm key="servicesform" />],
+  ["/agricpost", <AgricPost key="agricpost" />],
+  ["/housing", <BuildingPost key="housing" />],
+  ["/equipment", <Equipments key="equipment" />],
+  ["/listproducts", <ProductManagement key="listproducts" />],
+  ["/shopmana", <ShopManagement key="shopmana" />],
+  ["/servmana", <ServicesMana key="servmana" />],
+  ["/agricmana", <AgricMana key="agricmana" />],
+  ["/building", <HousingMana key="building" />],
+  ["/building/:id", <BuildingDetail key="buildingid" />],
+  ["/products/:id", <AdminProductDetail key="products" />],
+  ["/shoppage/:id", <AdminShopDetail key="shoppage" />],
+  ["/agricpage/:id", <AdminAgricDetail key="agricpage" />],
+  ["/adminservices/:id", <AdminServicesDetail key="adminservices" />],
+  ["/adds", <Adds key="adds" />],
+  ["/verification", <Verification key="verification" />],
+  ["/profile", <MyProfile key="profile" />],
+  ["/saved", <SavedItems key="saved" />],
+  ["/report", <Report key="report" />],
+  ["/callcenter", <CallCenter key="callcenter" />],
+];
+
+// Sends a signed-out visitor to log in, remembering where they were going.
+const SignInFirst = () => {
+  const location = useLocation();
+  setReturnTo(`${location.pathname}${location.search}`);
+  return <Navigate to="/loginform" replace />;
+};
+
+const RouteLoading = () => (
+  <div className="flex min-h-[60vh] items-center justify-center pt-20" role="status">
+    <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-brand-400 border-t-transparent" />
+    <span className="sr-only">Loading…</span>
+  </div>
+);
+
+// The login / signup screens have their own full-page layout.
+const AUTH_PATHS = ["/loginform", "/signupform"];
 
 const App = () => {
     const isLoggedIn = useSelector((state) => state.login);
     const location = useLocation();
+    // Signed-in users always get the navbar (it also redirects them away
+    // from /loginform after a successful login); visitors get it on every
+    // page except the login/signup screens.
+    const showNavbar = isLoggedIn || !AUTH_PATHS.includes(location.pathname);
 
     return (
-      <>
+      <LoginPromptProvider>
      <ScrollToTop />
      <ToastContainer position="top-center" autoClose={3500} hideProgressBar newestOnTop />
-     {(isLoggedIn || location.pathname === "/") && <NavbarCompo />}
+     {showNavbar && <NavbarCompo />}
         <div className="flex min-h-screen flex-col">
         <div className="flex-1">
+          <Suspense fallback={<RouteLoading />}>
           <Routes>
-            {!isLoggedIn ? (
-              <>
-                <Route path="/" element={<Home />} />
-                <Route path="/loginform" element={<Login />} />
-                <Route path="*" element={<ErrorPage />} />  
-                <Route path="/signupform" element={<Signup />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/detail/:type/:id" element={<HotDetail />} />
-                <Route path="/forgotpassword" element={<ForgotPassword />} />
-                <Route path="/reset-password/:token" element={<ResetPassword />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy /> } />
-                <Route path="/terms" element={<TermsOfUse /> } />
-              </>
-            ) : (
-              <>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/advert" element={<Advert />} />
-                <Route path="/detail/:type/:id" element={<HotDetail />} />
-                <Route path="/tabs" element={<TabView />} />
-                <Route path="/buy" element={<BuyTabView />} />
-                <Route path="/rent" element={<RentTabView />} />
-                <Route path="/user" element={<Admin />} />
-                {/* <Route path="/dash" element={<Dashboard />} /> */}
-                {/* <Route path="/signupform" element={<Signup />} />
-                <Route path="/loginform" element={<Login />} /> */}
-                <Route path="/listproduct" element={<Listproducts />} />
-                <Route path="/sigform" element={<SingleProductform />} />
-                <Route path="/shopform" element={<Shopform />} />
-                <Route path="/servicesform" element={<ServiceesForm />} />
-                <Route path="/agricpost" element={<AgricPost />} />
-                <Route path="/housing" element={<BuildingPost />} />
-                <Route path="/equipment" element={<Equipments />} />
-                <Route path="/listproducts" element={<ProductManagement />} />
-                <Route path="/shopmana" element={<ShopManagement />} />
-                <Route path="/servmana" element={<ServicesMana />} />
-                <Route path="/agricmana" element={<AgricMana />} />
-                <Route path="/building" element={<HousingMana />} />
-                <Route path="/building/:id" element={<BuildingDetail />} />
-                <Route path="/products/:id" element={<AdminProductDetail />} />
-                <Route path="/shoppage/:id" element={<AdminShopDetail />} />
-                <Route path="/agricpage/:id" element={<AdminAgricDetail />} />
-                <Route path="/adminservices/:id" element={<AdminServicesDetail />} />
-                <Route path="/calldriver/:id" element={<CallDriver />} />
-                <Route path="/adds" element={<Adds />} />
-                <Route path="/verification" element={<Verification />} />
-                <Route path="/hiredetail/:id" element={<HireDetail />} />
-                <Route path="/callmechanics/:id" element={<CallMechanics />} />
-                <Route path="/sparepart/:id" element={<SparepartDetail />} />
-                <Route path="/detail/:id" element={<Detail />} />
-                <Route path="/shopdetail/:id" element={<ShopDetail />} />
-                <Route path="/servicesdetail/:id" element={<ServicesDetail />} />
-                <Route path="/agricdetail/:id" element={<AgricDetail />} />
-                <Route path="/buildingdetail/:id" element={<MainDetail />} />
-                <Route path="/equipmentdetail/:id" element={<EquipmentDetail />} />
-                <Route path="/calldelivery/:id" element={<CallDelivery />} />
-                <Route path="/forgotpassword" element={<ForgotPassword />} />
-                <Route path="/reset-password/:token" element={<ResetPassword />} />
-                <Route path="/profile" element={<MyProfile />} />
-                <Route path="/saved" element={<SavedItems />} />
-                <Route path="/verification" element={<Verification />} />
-                <Route path="/report" element={<Report />} />
-                <Route path="/callcenter" element={<CallCenter />} />
-                <Route path="*" element={<ErrorPage />} /> 
-                <Route path="/privacy-policy" element={<PrivacyPolicy /> } />
-                <Route path="/terms" element={<TermsOfUse /> } />
-              </>
-            )}
+            {publicRoutes.map(([path, element]) => (
+              <Route key={path} path={path} element={element} />
+            ))}
+            {accountRoutes.map(([path, element]) => (
+              <Route key={path} path={path} element={isLoggedIn ? element : <SignInFirst />} />
+            ))}
+            {!isLoggedIn && <Route path="/loginform" element={<Login />} />}
+            {!isLoggedIn && <Route path="/signupform" element={<Signup />} />}
+            <Route path="*" element={<ErrorPage />} />
           </Routes>
+          </Suspense>
         </div>
         <Footer />
         {/* Clearance so the fixed mobile bottom nav never overlaps the
@@ -148,7 +174,7 @@ const App = () => {
         <div className="h-20 lg:hidden" aria-hidden="true" />
         </div>
         <ButtonNavigation />
-      </>
+      </LoginPromptProvider>
   );
 };
 

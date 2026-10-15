@@ -18,6 +18,7 @@ import ListingCard from '../../components/ui/ListingCard';
 import EmptyState from '../../components/ui/EmptyState';
 import SectionHeading from '../../components/ui/SectionHeading';
 import useGeolocation from "@/hooks/useGeolocation";
+import { useRequireLogin } from "../../components/auth/LoginPrompt";
 
 
 const Detail = () => {
@@ -29,6 +30,7 @@ const Detail = () => {
   const [selectedOption, setSelectedOption] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const userid = useSelector((state) => state.user.id);
+  const requireLogin = useRequireLogin();
   const [userData, setUserData] = useState({ name: '', email: '', phone: '' });
   const [complaintError, setComplaintError] = useState('');
   const [comments, setComments] = useState([]);
@@ -89,8 +91,11 @@ const Detail = () => {
   // Fetch user data
   const fetchUserData = async () => {
     try {
-      const response = await fetch(`${baseURL}userbyid/${userid}`);
-      const data = await response.json();
+      // Signed-out visitors can browse too: only look the user up when
+      // there is one, so the comments below still load for everyone.
+      const data = userid
+        ? await (await fetch(`${baseURL}userbyid/${userid}`)).json()
+        : {};
       setUserData({ name: data.name, email: data.email, phone: data.phone });
 
       const commentsResponse = await fetch(`${baseURL}comment/comments/${id}`);
@@ -183,6 +188,7 @@ const Detail = () => {
   ];
 
   const handleCompliants = async () => {
+    if (!requireLogin("report")) return;
     if (!selectedOption.trim()) {
       setComplaintError("Please select one option above.");
       return;
@@ -225,6 +231,7 @@ const Detail = () => {
 
 
   const handlePostComment = async () => {
+    if (!requireLogin("comment")) return;
     if (!comment.trim()) {
       alert('Please write a comment before posting.');
       return;
@@ -368,6 +375,7 @@ const Detail = () => {
 
 
 const openDial = async () => {
+  if (!requireLogin("call")) return;
   try {
     // Sending call request
     const response = await fetch(`${baseURL}call`, {
@@ -417,6 +425,7 @@ const openDial = async () => {
 
 
 const WhatsApp = async () => {
+  if (!requireLogin("whatsapp")) return;
   try {
     // Send user data to the backend
     const response = await fetch(`${baseURL}call`, {
@@ -599,7 +608,7 @@ const openWhatsApp = (phoneNumber, message = "") => {
 
               {/* Report Button */}
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => requireLogin("report") && setIsModalOpen(true)}
                 className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-medium text-ink-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
               >
                 <BsFlagFill /> Report

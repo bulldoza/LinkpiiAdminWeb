@@ -19,6 +19,7 @@ import LoadMoreButton from "@/components/ui/LoadMoreButton";
 import EmptyState from "@/components/ui/EmptyState";
 import Container from "@/components/ui/Container";
 import useGeolocation from "@/hooks/useGeolocation";
+import { useRequireLogin } from "../../components/auth/LoginPrompt";
 
 
 const SparepartDetail = () => {
@@ -31,6 +32,7 @@ const SparepartDetail = () => {
   const [selectedOption, setSelectedOption] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const userid = useSelector((state) => state.user.id);
+  const requireLogin = useRequireLogin();
   const [userData, setUserData] = useState({ name: '', email: '', phone: '' });
   const [complaintError, setComplaintError] = useState('');
   const [comments, setComments] = useState([]);
@@ -96,8 +98,11 @@ const SparepartDetail = () => {
   // Fetch user data
   const fetchUserData = async () => {
     try {
-      const response = await fetch(`${baseURL}userbyid/${user}`);
-      const data = await response.json();
+      // Signed-out visitors can browse too: only look the user up when
+      // there is one, so the comments below still load for everyone.
+      const data = user
+        ? await (await fetch(`${baseURL}userbyid/${user}`)).json()
+        : {};
       setUserData({ name: data.name, email: data.email, phone: data.phone });
 
       const commentsResponse = await fetch(`${baseURL}sparecomment/comments/${id}`);
@@ -202,6 +207,7 @@ const SparepartDetail = () => {
   ];
 
   const handleCompliants = async () => {
+    if (!requireLogin("report")) return;
     if (!selectedOption.trim()) {
       setComplaintError("Please select one option above.");
       return;
@@ -237,6 +243,7 @@ const SparepartDetail = () => {
   };
 
   const handlePostComment = async () => {
+    if (!requireLogin("comment")) return;
     if (!comment.trim()) {
       alert('Please write a comment before posting.');
       return;
@@ -399,6 +406,7 @@ const SparepartDetail = () => {
 
 
   const handleButtonClick = async () => {
+    if (!requireLogin("call")) return;
 
 
     // If the phone number is already visible, revert to "View Contact" without sending data
@@ -447,6 +455,7 @@ const SparepartDetail = () => {
 
 
   const WhatsApp = async () => {
+    if (!requireLogin("whatsapp")) return;
     try {
       // Send user data to the backend
       const response = await fetch(`${baseURL}call`, {
@@ -621,7 +630,7 @@ const SparepartDetail = () => {
 
             {/* Report Button */}
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => requireLogin("report") && setIsModalOpen(true)}
               className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-ink-200 py-2.5 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50"
             >
               <BsFlagFill /> Report
