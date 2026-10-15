@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import baseURL from '../../assets/baseURL';
+import { useRequireLogin } from '../auth/LoginPrompt';
 
 // Save / unsave ("like") a listing so a buyer can find it again later from
 // "My Saved Items". Works the same way across every category - just pass
@@ -12,6 +13,7 @@ const SaveButton = ({ categoryPath, itemId, userId, className = '' }) => {
   const [liked, setLiked] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const requireLogin = useRequireLogin();
 
   useEffect(() => {
     if (!categoryPath || !itemId) return;
@@ -37,6 +39,9 @@ const SaveButton = ({ categoryPath, itemId, userId, className = '' }) => {
 
   const toggleSave = async () => {
     if (!userId) {
+      // Ask in place (and come back here after sign-in) instead of
+      // bouncing the visitor to the login page.
+      if (!requireLogin('save')) return;
       navigate('/loginform');
       return;
     }

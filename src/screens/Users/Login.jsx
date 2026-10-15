@@ -14,6 +14,7 @@ import { jwtDecode } from "jwt-decode";
 import baseURL from "../../assets/baseURL";
 import GoogleLoginButton from "./GoogleLoginButton";
 import AuthLayout from "../../components/ui/AuthLayout";
+import { consumeReturnTo } from "../../utils/returnTo";
 
 
 // Eric: set this to true to bring email/password login back - Google-only for now.
@@ -46,7 +47,8 @@ const Login = () => {
 
   useEffect(() => {
     if (login) {
-      window.location.href = "/";
+      // Back to the listing they were on when we asked them to sign in.
+      window.location.href = consumeReturnTo() || "/";
     }
   }, [login]);
 

@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { FiPlusCircle } from "react-icons/fi";
-import { FaStar, FaHireAHelper } from "react-icons/fa";
+import { FaHireAHelper } from "react-icons/fa";
 import { MdPhoneIphone } from "react-icons/md";
-import { FiTruck } from "react-icons/fi";
+import { FiTruck, FiHome } from "react-icons/fi";
+import { useRequireLogin } from "./auth/LoginPrompt";
 
 const tabs = [
-  { key: "advert", path: "/", label: "Adverts", Icon: FaStar },
+  { key: "advert", path: "/", label: "Home", Icon: FiHome },
   { key: "buy", path: "/buy?tab=0", label: "Buy", Icon: MdPhoneIphone },
   { key: "tabs", path: "/tabs?tab=0", label: "KIA", Icon: FiTruck },
   { key: "rent", path: "/rent?tab=0", label: "Rent", Icon: FaHireAHelper },
@@ -19,6 +20,7 @@ const ButtonNavigation = () => {
   const [searchParams] = useSearchParams();
   const [activeButton, setActiveButton] = useState("");
   const isLoggedIn = useSelector((state) => state.login);
+  const requireLogin = useRequireLogin();
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -45,7 +47,9 @@ const ButtonNavigation = () => {
     navigate(path);
   };
 
-  if (!isLoggedIn || pathname === "/report") return null;
+  // Shown to visitors too now that browsing is public - just not on the
+  // full-page login/signup screens or the account-suspended page.
+  if (["/report", "/loginform", "/signupform"].includes(pathname)) return null;
 
   const renderTab = ({ key, path, label, Icon }) => {
     const active = activeButton === key;
@@ -59,14 +63,14 @@ const ButtonNavigation = () => {
       >
         <span
           className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
-            active ? "text-brand-600" : "text-ink-400"
+            active ? "text-brand-600" : "text-ink-600"
           }`}
         >
           <Icon className="text-lg" />
         </span>
         <span
           className={`text-[10.5px] font-semibold ${
-            active ? "text-brand-700" : "text-ink-400"
+            active ? "text-brand-700" : "text-ink-600"
           }`}
         >
           {label}
@@ -91,7 +95,10 @@ const ButtonNavigation = () => {
         {firstHalf.map(renderTab)}
 
         <button
-          onClick={() => handleButtonClick("/user", "user")}
+          onClick={() => {
+            if (!requireLogin("sell")) return;
+            handleButtonClick("/user", "user");
+          }}
           className="flex flex-1 flex-col items-center gap-0.5 py-1.5"
         >
           <span
@@ -103,10 +110,10 @@ const ButtonNavigation = () => {
           </span>
           <span
             className={`text-[10.5px] font-semibold ${
-              activeButton === "user" ? "text-accent-600" : "text-ink-400"
+              activeButton === "user" ? "text-accent-700" : "text-ink-600"
             }`}
           >
-            My Post
+            {isLoggedIn ? "My Post" : "Sell"}
           </span>
         </button>
 

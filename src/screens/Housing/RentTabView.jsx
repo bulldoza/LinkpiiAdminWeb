@@ -28,7 +28,11 @@ export default function RentTabView() {
   // Update URL when selected tab changes
   useEffect(() => {
     // Update the URL query parameter when the tab changes
-    navigate(`?tab=${selectedIndex}`, { replace: true });
+    // Keep any other query params (e.g. ?query= from a homepage search)
+    // so the tab's screen can still read them.
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", selectedIndex);
+    navigate(`?${params.toString()}`, { replace: true });
   }, [selectedIndex, navigate]);
 
   return (

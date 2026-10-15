@@ -16,6 +16,7 @@ import Container from "../../components/ui/Container";
 import ListingCard from "../../components/ui/ListingCard";
 import SectionHeading from "../../components/ui/SectionHeading";
 import useGeolocation from "@/hooks/useGeolocation";
+import { useRequireLogin } from "../../components/auth/LoginPrompt";
 
 function HotDetail() {
   const { getLocation } = useGeolocation();
@@ -34,6 +35,7 @@ function HotDetail() {
   const [userData, setUserData] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const UserState = useSelector((state) => state.user.id);
+  const requireLogin = useRequireLogin();
   const [comments, setComments] = useState([]);
   const [isCommentsLoading, setIsCommentsLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
@@ -141,7 +143,9 @@ useEffect(() => {
     }
   };
 
-  if (id) fetchUser();
+  // Only signed-in users have a profile to load.
+  if (id && UserState) fetchUser();
+  else setLoadingUser(false);
 }, [id]);
 
   // Fetch related products
@@ -181,6 +185,7 @@ useEffect(() => {
 
 const handleCommentSubmit = async (e) => {
   e?.preventDefault?.();
+  if (!requireLogin("comment")) return;
   if (!newComment.trim() || !item?._id) return;
 
   setIsPosting(true); // ✅ start loading
@@ -266,6 +271,7 @@ const handleCommentSubmit = async (e) => {
 
 
 const openDial = async () => {
+  if (!requireLogin("call")) return;
   try {
     const response = await fetch(`${baseURL}call`, {
       method: 'POST',
@@ -295,6 +301,7 @@ const openDial = async () => {
 
 
 const WhatsApp = async () => {
+  if (!requireLogin("whatsapp")) return;
   try {
     // Send user data to the backend
     const response = await fetch(`${baseURL}whatsapp`, {
@@ -363,6 +370,7 @@ const openWhatsApp = (phoneNumber, message = "") => {
 
 
 const handleCompliants = async () => {
+  if (!requireLogin("report")) return;
   if (loadingUser) {
     setComplaintError("⏳ Loading user data. Please wait.");
     return;
@@ -610,7 +618,7 @@ const handleDeleteComment = async (commentId) => {
 
               {/* Report Button */}
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => requireLogin("report") && setIsModalOpen(true)}
                 className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-ink-200 px-4 py-2.5 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200"
               >
                 <BsFlagFill /> Report

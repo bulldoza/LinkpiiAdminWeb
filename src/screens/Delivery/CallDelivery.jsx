@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { LuPhoneCall } from "react-icons/lu";
 import Container from "../../components/ui/Container";
 import useGeolocation from "@/hooks/useGeolocation";
+import { useRequireLogin } from "../../components/auth/LoginPrompt";
 
 const CallDelivery = () => {
   const { getLocation } = useGeolocation();
@@ -22,6 +23,9 @@ const CallDelivery = () => {
 
 
   const user = useSelector((state) => state.user.id);
+
+
+  const requireLogin = useRequireLogin();
 
   const fetchDriverDetails = async () => {
     try {
@@ -40,8 +44,11 @@ const CallDelivery = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await fetch(`${baseURL}userbyid/${user}`);
-      const data = await response.json();
+      // Signed-out visitors can browse too: only look the user up when
+      // there is one, so the comments below still load for everyone.
+      const data = user
+        ? await (await fetch(`${baseURL}userbyid/${user}`)).json()
+        : {};
       setUserData({
         name: data.name,
         email: data.email,
@@ -65,6 +72,7 @@ const CallDelivery = () => {
   };
 
   const openDial = async () => {
+    if (!requireLogin("call")) return;
     if (!userData.verified) {
       navigate("/verification");
       return;

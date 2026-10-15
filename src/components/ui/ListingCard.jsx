@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import useSaveToggle from "../../hooks/useSaveToggle";
+import { useRequireLogin } from "../auth/LoginPrompt";
 
 const fallbackImage = "https://via.placeholder.com/400x300?text=Linkpii";
 
@@ -30,6 +31,7 @@ const ListingCard = ({
   className = "",
 }) => {
   const navigate = useNavigate();
+  const requireLogin = useRequireLogin();
   const canSave = Boolean(categoryPath && itemId);
   const { liked, loading, toggle } = useSaveToggle(categoryPath, itemId);
 
@@ -37,6 +39,7 @@ const ListingCard = ({
     e.preventDefault();
     e.stopPropagation();
     if (!canSave || loading) return;
+    if (!requireLogin("save")) return;
     toggle(() => navigate("/loginform"));
   };
 
